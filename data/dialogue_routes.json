@@ -1,0 +1,384 @@
+{
+  "routes": {
+    "ask_recommendation": {
+      "action": "ask_followup",
+      "scenario": "clarify_needs",
+      "response_source": "dialogues",
+      "allow_ad_transition": true,
+      "followup_type": "budget_or_usage",
+      "set_context": {
+        "dialogue_stage": "needs_clarification",
+        "recommendation_requested": true
+      }
+    },
+    "ask_budget_option": {
+      "action": "recommend_product",
+      "scenario": "budget_recommendation",
+      "product_selector": {
+        "budget_tier": "budget"
+      },
+      "save_as_current_product": true,
+      "allow_ad_transition": true,
+      "set_context": {
+        "last_budget_tier": "budget",
+        "dialogue_stage": "recommendation"
+      }
+    },
+    "ask_midrange_option": {
+      "action": "recommend_product",
+      "scenario": "midrange_recommendation",
+      "product_selector": {
+        "budget_tier": "mid"
+      },
+      "save_as_current_product": true,
+      "allow_ad_transition": true,
+      "set_context": {
+        "last_budget_tier": "mid",
+        "dialogue_stage": "recommendation"
+      }
+    },
+    "ask_premium_option": {
+      "action": "recommend_product",
+      "scenario": "premium_recommendation",
+      "product_selector": {
+        "budget_tier": "premium"
+      },
+      "save_as_current_product": true,
+      "allow_ad_transition": true,
+      "set_context": {
+        "last_budget_tier": "premium",
+        "dialogue_stage": "recommendation"
+      }
+    },
+    "ask_home_option": {
+      "action": "recommend_product",
+      "scenario": "home_recommendation",
+      "product_selector": {
+        "use_cases": "home",
+        "preferred_order": [
+          "magnifica_s_mid",
+          "stilosa_budget",
+          "magnifica_plus_premium"
+        ]
+      },
+      "save_as_current_product": true,
+      "allow_ad_transition": true,
+      "set_context": {
+        "usage_type": "home",
+        "dialogue_stage": "recommendation"
+      }
+    },
+    "ask_office_option": {
+      "action": "recommend_product",
+      "scenario": "office_recommendation",
+      "product_selector": {
+        "preferred_order": [
+          "magnifica_plus_premium",
+          "magnifica_s_mid"
+        ]
+      },
+      "save_as_current_product": true,
+      "allow_ad_transition": true,
+      "set_context": {
+        "usage_type": "office",
+        "dialogue_stage": "recommendation"
+      }
+    },
+    "ask_cappuccino_option": {
+      "action": "recommend_product",
+      "scenario": "cappuccino_recommendation",
+      "product_selector": {
+        "preferred_order": [
+          "magnifica_plus_premium",
+          "magnifica_s_mid"
+        ],
+        "drink_focus": "cappuccino"
+      },
+      "save_as_current_product": true,
+      "allow_ad_transition": true,
+      "set_context": {
+        "drink_preference": "cappuccino",
+        "dialogue_stage": "recommendation"
+      }
+    },
+    "ask_easy_clean_option": {
+      "action": "recommend_product",
+      "scenario": "easy_clean_recommendation",
+      "product_selector": {
+        "preferred_order": [
+          "magnifica_s_mid",
+          "magnifica_plus_premium"
+        ]
+      },
+      "save_as_current_product": true,
+      "allow_ad_transition": true,
+      "set_context": {
+        "priority": "easy_clean",
+        "dialogue_stage": "recommendation"
+      }
+    },
+    "ask_compact_option": {
+      "action": "recommend_product",
+      "scenario": "compact_recommendation",
+      "product_selector": {
+        "scenario_tags": "compact",
+        "preferred_order": [
+          "stilosa_budget"
+        ]
+      },
+      "save_as_current_product": true,
+      "allow_ad_transition": true,
+      "set_context": {
+        "priority": "compact",
+        "dialogue_stage": "recommendation"
+      }
+    },
+    "ask_price": {
+      "action": "describe_current_product",
+      "scenario": "price_description",
+      "response_source": "products",
+      "fallback_action": "ask_followup",
+      "fallback_scenario": "clarify_target_product",
+      "followup_type": "which_product"
+    },
+    "ask_features": {
+      "action": "describe_current_product",
+      "scenario": "feature_description",
+      "response_source": "products",
+      "fallback_action": "ask_followup",
+      "fallback_scenario": "clarify_target_product",
+      "followup_type": "which_product"
+    },
+    "ask_comparison": {
+      "action": "compare_products",
+      "scenario": "comparison",
+      "comparison_mode": "last_or_default",
+      "default_products": [
+        "stilosa_budget",
+        "magnifica_s_mid",
+        "magnifica_plus_premium"
+      ],
+      "set_context": {
+        "dialogue_stage": "comparison"
+      }
+    },
+    "ask_best_model": {
+      "action": "recommend_product",
+      "scenario": "best_model_explained",
+      "product_selector": {
+        "preferred_order": [
+          "magnifica_plus_premium",
+          "magnifica_s_mid",
+          "stilosa_budget"
+        ]
+      },
+      "save_as_current_product": true,
+      "allow_ad_transition": true,
+      "set_context": {
+        "dialogue_stage": "recommendation"
+      }
+    },
+    "ask_alternative": {
+      "action": "recommend_alternative",
+      "scenario": "alternative_offer",
+      "alternative_rule": "adjacent_budget",
+      "save_as_current_product": true
+    },
+    "ask_automatic_option": {
+      "action": "recommend_product",
+      "scenario": "automatic_recommendation",
+      "product_selector": {
+        "preferred_order": [
+          "magnifica_plus_premium",
+          "magnifica_s_mid"
+        ]
+      },
+      "save_as_current_product": true,
+      "allow_ad_transition": true,
+      "set_context": {
+        "priority": "automatic",
+        "dialogue_stage": "recommendation"
+      }
+    },
+    "ad_accept": {
+      "action": "resume_or_start_recommendation",
+      "scenario": "ad_accept_start",
+      "default_route": "ask_recommendation",
+      "allow_ad_transition": true,
+      "set_context": {
+        "ad_flow_active": true
+      }
+    },
+    "ad_decline": {
+      "action": "reply",
+      "scenario": "exit_ad_flow",
+      "response_source": "intents",
+      "allow_ad_transition": false,
+      "set_context": {
+        "ad_flow_active": false,
+        "dialogue_stage": "neutral"
+      }
+    },
+    "choice_done": {
+      "action": "finish_product_flow",
+      "scenario": "choice_done",
+      "set_context": {
+        "dialogue_stage": "choice_done"
+      }
+    },
+    "objection_expensive": {
+      "action": "recommend_alternative",
+      "scenario": "price_objection",
+      "alternative_rule": "lower_budget",
+      "save_as_current_product": true,
+      "set_context": {
+        "price_objection": true
+      }
+    },
+    "objection_doubt": {
+      "action": "reply_or_compare",
+      "scenario": "doubt_handling",
+      "response_source": "dialogues",
+      "comparison_fallback": true,
+      "set_context": {
+        "user_uncertain": true
+      }
+    },
+    "objection_no_need": {
+      "action": "reply",
+      "scenario": "soft_exit_from_sales",
+      "response_source": "intents",
+      "allow_ad_transition": false,
+      "set_context": {
+        "ad_flow_active": false,
+        "dialogue_stage": "neutral"
+      }
+    },
+    "fallback": {
+      "action": "reply",
+      "scenario": "fallback",
+      "response_source": "intents",
+      "allow_ad_transition": false
+    }
+  },
+  "scenario_templates": {
+    "clarify_needs": {
+      "builder": "followup_question",
+      "question_key": "budget_or_usage"
+    },
+    "automatic_recommendation": {
+      "builder": "product_recommendation",
+      "ad_text_key": "medium"
+    },
+    "budget_recommendation": {
+      "builder": "product_recommendation",
+      "ad_text_key": "medium"
+    },
+    "midrange_recommendation": {
+      "builder": "product_recommendation",
+      "ad_text_key": "medium"
+    },
+    "premium_recommendation": {
+      "builder": "product_recommendation",
+      "ad_text_key": "medium"
+    },
+    "home_recommendation": {
+      "builder": "product_recommendation",
+      "ad_text_key": "medium"
+    },
+    "office_recommendation": {
+      "builder": "product_recommendation",
+      "ad_text_key": "medium"
+    },
+    "cappuccino_recommendation": {
+      "builder": "product_recommendation",
+      "ad_text_key": "medium"
+    },
+    "easy_clean_recommendation": {
+      "builder": "product_recommendation",
+      "ad_text_key": "medium"
+    },
+    "compact_recommendation": {
+      "builder": "product_recommendation",
+      "ad_text_key": "medium"
+    },
+    "price_description": {
+      "builder": "current_product_price"
+    },
+    "feature_description": {
+      "builder": "current_product_features"
+    },
+    "comparison": {
+      "builder": "product_comparison"
+    },
+    "best_model_explained": {
+      "builder": "best_product_with_disclaimer",
+      "ad_text_key": "medium"
+    },
+    "alternative_offer": {
+      "builder": "alternative_product_recommendation",
+      "ad_text_key": "medium"
+    },
+    "ad_accept_start": {
+      "builder": "resume_recommendation_or_followup"
+    },
+    "choice_done": {
+      "builder": "intent_response"
+    },
+    "exit_ad_flow": {
+      "builder": "intent_response"
+    },
+    "price_objection": {
+      "builder": "alternative_product_recommendation",
+      "ad_text_key": "objection_expensive"
+    },
+    "doubt_handling": {
+      "builder": "intent_response_or_comparison"
+    },
+    "soft_exit_from_sales": {
+      "builder": "intent_response"
+    },
+    "fallback": {
+      "builder": "intent_response"
+    },
+    "clarify_target_product": {
+      "builder": "followup_question",
+      "question_key": "which_product"
+    }
+  },
+  "followup_questions": {
+    "budget_or_usage": [
+      "Конечно. Для тебя важнее низкая цена, простота использования или капучино?",
+      "Помогу. Подскажи, ты ищешь вариант для дома, для офиса или для молочных напитков?",
+      "Давай уточним: тебе важнее бюджет, автоматичность или вкус капучино?"
+    ],
+    "which_product": [
+      "Уточни, пожалуйста, о какой модели идёт речь: бюджетной, средней или премиальной?",
+      "О какой кофемашине ты хочешь узнать подробнее?",
+      "Напиши, какую модель ты имеешь в виду, и я расскажу подробнее."
+    ]
+  },
+  "global_rules": {
+    "default_comparison_products": [
+      "stilosa_budget",
+      "magnifica_s_mid",
+      "magnifica_plus_premium"
+    ],
+    "alternative_rules": {
+      "lower_budget": {
+        "premium": "mid",
+        "mid": "budget",
+        "budget": "budget"
+      },
+      "adjacent_budget": {
+        "premium": "mid",
+        "mid": "premium",
+        "budget": "mid"
+      }
+    },
+    "ad_transition_limits": {
+      "min_neutral_turns_before_ad": 1,
+      "block_if_user_declined_recently": true
+    }
+  }
+}

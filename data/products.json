@@ -1,0 +1,217 @@
+{
+  "products": [
+    {
+      "id": "stilosa_budget",
+      "name": "De'Longhi Stilosa EC235/EC230",
+      "brand": "De'Longhi",
+      "category": "кофемашины",
+      "budget_tier": "budget",
+      "price_segment": "low",
+      "type": "manual_espresso",
+      "use_cases": [
+        "home",
+        "espresso",
+        "compact_kitchen",
+        "entry_level"
+      ],
+      "drink_focus": [
+        "espresso",
+        "cappuccino"
+      ],
+      "milk_system": "manual",
+      "automation_level": "low",
+      "user_skill_level": "beginner_to_intermediate",
+      "recommended_for": [
+        "пользователь с ограниченным бюджетом",
+        "домашнее использование",
+        "тем, кто хочет недорогой вход в тему кофе"
+      ],
+      "not_ideal_for": [
+        "тем, кто хочет полностью автоматическое приготовление",
+        "тем, кто часто готовит молочные напитки без ручных действий"
+      ],
+      "specs": {
+        "pump_pressure_bar": 15,
+        "water_tank_l": 1.0,
+        "power_w": 1100,
+        "max_cup_height_mm": 110,
+        "dimensions_mm": [205, 343, 285]
+      },
+      "features": [
+        "ручное приготовление эспрессо",
+        "cappuccino system",
+        "съёмный поддон",
+        "индикатор уровня воды",
+        "поддержка ESE pods"
+      ],
+      "advantages": [
+        "доступная цена",
+        "компактность",
+        "подходит для старта",
+        "простая базовая логика использования"
+      ],
+      "disadvantages": [
+        "мало автоматизации",
+        "нужно больше действий от пользователя",
+        "менее удобна для частого капучино"
+      ],
+      "ad_texts": {
+        "short": "Если нужен недорогой вариант для дома, можно рассмотреть De'Longhi Stilosa — это компактная ручная модель для базового эспрессо и капучино.",
+        "medium": "De'Longhi Stilosa подойдёт тем, кто хочет начать с бюджетной кофемашины для дома. Она компактная, простая и даёт базовый набор возможностей без переплаты.",
+        "objection_expensive": "Если предложенный вариант кажется дорогим, можно перейти на De'Longhi Stilosa — это более доступная модель для домашнего использования."
+      },
+      "scenario_tags": [
+        "budget",
+        "home",
+        "compact",
+        "entry"
+      ]
+    },
+    {
+      "id": "magnifica_s_mid",
+      "name": "De'Longhi Magnifica S ECAM21.117",
+      "brand": "De'Longhi",
+      "category": "кофемашины",
+      "budget_tier": "mid",
+      "price_segment": "medium",
+      "type": "bean_to_cup_automatic",
+      "use_cases": [
+        "home",
+        "daily_use",
+        "automatic_coffee",
+        "balanced_choice"
+      ],
+      "drink_focus": [
+        "espresso",
+        "espresso_lungo",
+        "milk_based_drinks"
+      ],
+      "milk_system": "manual_frother",
+      "automation_level": "medium",
+      "user_skill_level": "beginner",
+      "recommended_for": [
+        "домашнее использование",
+        "тем, кто хочет автоматическую модель",
+        "тем, кому важен баланс цены и удобства"
+      ],
+      "not_ideal_for": [
+        "тем, кто хочет полностью автоматическое приготовление капучино",
+        "тем, кому нужен самый премиальный функционал"
+      ],
+      "specs": {
+        "pump_pressure_bar": 15,
+        "water_tank_l": 1.8,
+        "power_w": 1450,
+        "grounds_container_portions": 14,
+        "dimensions_mm": [238, 430, 340]
+      },
+      "features": [
+        "bean-to-cup система",
+        "ручной вспениватель молока",
+        "приготовление кофе одной кнопкой",
+        "Twin-Shot для двух эспрессо",
+        "настройка аромата и объёма",
+        "возможность использовать молотый кофе",
+        "водяной фильтр"
+      ],
+      "advantages": [
+        "хороший баланс цены и удобства",
+        "автоматическое приготовление кофе",
+        "подходит большинству пользователей",
+        "удобна для ежедневного использования"
+      ],
+      "disadvantages": [
+        "капучино не полностью автоматический",
+        "меньше продвинутых функций, чем у премиум-моделей"
+      ],
+      "ad_texts": {
+        "short": "Если нужен универсальный вариант для дома, Magnifica S — один из самых удобных кандидатов: автоматическое приготовление, зерновой кофе и понятное управление.",
+        "medium": "De'Longhi Magnifica S хорошо подходит тем, кто хочет нажать кнопку и быстро получить кофе дома. Это сбалансированная автоматическая модель среднего класса.",
+        "objection_expensive": "Если премиальная модель кажется слишком дорогой, Magnifica S может стать хорошим компромиссом между ценой и удобством."
+      },
+      "scenario_tags": [
+        "midrange",
+        "home",
+        "automatic",
+        "balanced"
+      ]
+    },
+    {
+      "id": "magnifica_plus_premium",
+      "name": "De'Longhi Magnifica Plus ECAM320.60.B",
+      "brand": "De'Longhi",
+      "category": "кофемашины",
+      "budget_tier": "premium",
+      "price_segment": "high",
+      "type": "bean_to_cup_automatic",
+      "use_cases": [
+        "home",
+        "premium_home",
+        "cappuccino",
+        "latte",
+        "comfort_first"
+      ],
+      "drink_focus": [
+        "espresso",
+        "americano",
+        "coffee",
+        "cappuccino",
+        "latte_macchiato",
+        "flat_white",
+        "hot_milk"
+      ],
+      "milk_system": "automatic",
+      "automation_level": "high",
+      "user_skill_level": "beginner",
+      "recommended_for": [
+        "любители молочных напитков",
+        "тем, кто хочет максимум удобства",
+        "тем, кому важны персональные настройки"
+      ],
+      "not_ideal_for": [
+        "тем, кто ищет минимальный бюджет",
+        "тем, кому не нужны расширенные функции"
+      ],
+      "specs": {
+        "pump_pressure_bar": 15,
+        "water_tank_l": 1.9,
+        "power_w": 1450,
+        "grounds_container_portions": 10,
+        "dimensions_mm": [240, 440, 360],
+        "user_profiles": 4
+      },
+      "features": [
+        "полностью автоматическая bean-to-cup система",
+        "автоматическая молочная система",
+        "сенсорное управление",
+        "4 пользовательских профиля",
+        "поддержка молотого кофе",
+        "программируемая жёсткость воды",
+        "водяной фильтр",
+        "расширенный набор напитков"
+      ],
+      "advantages": [
+        "очень высокий комфорт использования",
+        "удобна для капучино и латте",
+        "много напитков",
+        "персонализация под нескольких пользователей"
+      ],
+      "disadvantages": [
+        "более высокий бюджет",
+        "крупнее и тяжелее простых моделей"
+      ],
+      "ad_texts": {
+        "short": "Если хочется максимум удобства и хороший выбор молочных напитков, Magnifica Plus — сильный премиальный вариант для дома.",
+        "medium": "De'Longhi Magnifica Plus подойдёт тем, кто хочет автоматическую кофемашину почти уровня кофейни дома: сенсорное управление, персональные профили и удобное приготовление капучино и латте.",
+        "objection_expensive": "Если Magnifica Plus кажется слишком дорогой, можно рассмотреть Magnifica S как более доступную автоматическую альтернативу."
+      },
+      "scenario_tags": [
+        "premium",
+        "cappuccino",
+        "latte",
+        "automatic",
+        "comfort"
+      ]
+    }
+  ]
+}
