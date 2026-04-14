@@ -5,9 +5,12 @@ from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandl
 from bot.handlers import (
     handle_text_message,
     help_command,
+    handle_voice_message,
     set_dialogue_manager,
+    set_voice_service,
     start_command,
 )
+from core.voice_service import VoiceService
 from core.dialogue_manager import DialogueManager
 
 
@@ -35,8 +38,13 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
             print(f"Failed to notify user about error: {nested_error}")
 
 
-def create_application(bot_token: str, dialogue_manager: DialogueManager) -> Application:
+def create_application(
+        bot_token: str,
+        dialogue_manager: DialogueManager,
+        voice_service: VoiceService,
+) -> Application:
     set_dialogue_manager(dialogue_manager)
+    set_voice_service(voice_service)
 
     application = (
         Application.builder()
@@ -58,6 +66,7 @@ def create_application(bot_token: str, dialogue_manager: DialogueManager) -> App
 
     application.add_handler(CommandHandler("start", start_command))
     application.add_handler(CommandHandler("help", help_command))
+    application.add_handler(MessageHandler(filters.VOICE, handle_voice_message))
     application.add_handler(
         MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text_message)
     )

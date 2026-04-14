@@ -57,6 +57,9 @@ class DialogueManager:
         if mode == "product_flow":
             return self._handle_product_flow(text, context)
 
+        if mode == "coffee_chat":
+            return self._handle_coffee_chat(text, context)
+
         return self._handle_free_chat(text, context)
 
     def _handle_free_chat(
@@ -104,15 +107,41 @@ class DialogueManager:
         context["last_intent"] = "smalltalk"
         context["last_confidence"] = float(smalltalk_result["score"])
 
-        # Если бот в прошлом сообщении сам поднял тему кофе и теперь ждёт реакцию
-        if context.get("coffee_probe_pending"):
-            coffee_reply = self._detect_coffee_interest_reply(text)
+        # Если пользователь сам заговорил о кофе — уходим в coffee_chat
+        coffee_reply = self._detect_coffee_interest_reply(text)
+        if coffee_reply == "positive":
+            context["mode"] = "coffee_chat"
+            context["coffee_probe_pending"] = False
+            context["bridge_pending"] = False
+            context["coffee_topic_turns"] += 1
+            context["coffee_chat_turns"] = 1
+            context["last_offer_topic"] = "coffee_machine"
 
-            if coffee_reply == "positive":
+            coffee_text = self.text_repository.get("free_chat.coffee_positive_replies")
+            if coffee_text:
+                reply = coffee_text
+
+            return {
+                "reply": reply,
+                "intent": "coffee_interest",
+                "confidence": 1.0,
+                "context": context,
+            }
+
+        if coffee_reply == "negative":
+            context["coffee_probe_pending"] = False
+            context["coffee_cooldown"] = 6
+
+        # Если бот сам поднял тему кофе и ждёт реакцию
+        if context.get("coffee_probe_pending"):
+            probe_reply = self._detect_coffee_interest_reply(text)
+
+            if probe_reply == "positive":
+                context["mode"] = "coffee_chat"
                 context["coffee_probe_pending"] = False
+                context["bridge_pending"] = False
                 context["coffee_topic_turns"] += 1
-                context["bridge_pending"] = True
-                context["offer_pending"] = False
+                context["coffee_chat_turns"] = 1
                 context["last_offer_topic"] = "coffee_machine"
 
                 coffee_text = self.text_repository.get("free_chat.coffee_positive_replies")
@@ -126,9 +155,9 @@ class DialogueManager:
                     "context": context,
                 }
 
-            elif coffee_reply == "negative":
+            if probe_reply == "negative":
                 context["coffee_probe_pending"] = False
-                context["coffee_cooldown"] = 5
+                context["coffee_cooldown"] = 6
 
                 coffee_text = self.text_repository.get("free_chat.coffee_negative_replies")
                 if coffee_text:
@@ -141,10 +170,10 @@ class DialogueManager:
                     "context": context,
                 }
 
-            else:
-                context["coffee_probe_pending"] = False
-                context["coffee_cooldown"] = 4
+            context["coffee_probe_pending"] = False
+            context["coffee_cooldown"] = 5
 
+        # Иногда бот сам мягко поднимает тему кофе
         if self._should_make_coffee_probe(context):
             probe_text = self.text_repository.get("free_chat.coffee_probes")
             if probe_text:
@@ -152,40 +181,114 @@ class DialogueManager:
                 context["coffee_probe_pending"] = True
                 context["last_coffee_probe_turn"] = context["free_chat_turns"]
 
+        return {
+            "reply": reply,
+            "intent": "smalltalk",
+            "confidence": float(smalltalk_result["score"]),
+            "context": context,
+        }
+
+    def _handle_coffee_chat(
+            self,
+            text: str,
+            context: dict[str, Any],
+    ) -> dict[str, Any]:
+        """
+        Отдельная ветка разговора о кофе.
+        Здесь:
+        - поддерживаем тему кофе
+        - даём мостик
+        - затем делаем оффер на подбор кофемашины
+        """
+        prediction = self.classifier.predict(text)
+        intent = str(prediction["intent"])
+        confidence = float(prediction["confidence"])
+
+        # Если пользователь уже явно просит подобрать кофемашину — сразу уходим в product_flow
+        if self._is_explicit_product_entry(text, intent, confidence):
+            context["mode"] = "product_flow"
+            context["offer_pending"] = False
+            context["ad_flow_active"] = True
+            context["bridge_pending"] = False
+            context["coffee_probe_pending"] = False
+
+            reply = self._execute_product_action(intent=intent, context=context)
+
+            context["last_intent"] = intent
+            context["last_confidence"] = confidence
+
+            return {
+                "reply": reply,
+                "intent": intent,
+                "confidence": confidence,
+                "context": context,
+            }
+
+        smalltalk_result = self.smalltalk_retriever.get_reply(text)
+        reply = smalltalk_result["reply"]
+
+        context["coffee_chat_turns"] += 1
+        context["coffee_topic_turns"] += 1
+        context["last_intent"] = "coffee_chat"
+        context["last_confidence"] = float(smalltalk_result["score"])
+
+        coffee_reply = self._detect_coffee_interest_reply(text)
+
+        if coffee_reply == "negative":
+            context["mode"] = "free_chat"
+            context["bridge_pending"] = False
+            context["coffee_probe_pending"] = False
+            context["coffee_cooldown"] = 8
+            context["coffee_chat_turns"] = 0
+
+            negative_text = self.text_repository.get("free_chat.coffee_negative_replies")
+            if negative_text:
+                reply = negative_text
+
             return {
                 "reply": reply,
                 "intent": "smalltalk",
+                "confidence": 1.0,
+                "context": context,
+            }
+
+        # Сначала мостик
+        if self._should_trigger_bridge(text, context):
+            bridge_text = self.text_repository.get("free_chat.bridge_replies")
+            if bridge_text:
+                reply = bridge_text
+
+            context["bridge_pending"] = True
+
+            return {
+                "reply": reply,
+                "intent": "coffee_chat",
                 "confidence": float(smalltalk_result["score"]),
                 "context": context,
             }
 
-        if self._should_trigger_bridge(text, context):
-            bridge_text = self.text_repository.get("free_chat.bridge_replies")
-            if bridge_text:
-                reply = f"{self._ensure_sentence_ending(reply)} {bridge_text}"
-
-            context["bridge_pending"] = True
-            context["last_offer_topic"] = "coffee_machine"
-            context["offer_cooldown"] = 0
-
-        elif self._should_make_offer(context):
+        # Потом оффер
+        if self._should_make_offer(context):
             offer_text = self.text_repository.get("free_chat.offer_transition")
             if offer_text:
-                reply = f"{self._ensure_sentence_ending(reply)} {offer_text}"
+                reply = offer_text
 
             context["mode"] = "offer_pending"
             context["offer_pending"] = True
             context["bridge_pending"] = False
             context["offers_shown_count"] += 1
-            context["offer_cooldown"] = 0
             context["last_offer_topic"] = "coffee_machine"
 
-        else:
-            context["offer_cooldown"] += 1
+            return {
+                "reply": reply,
+                "intent": "coffee_offer",
+                "confidence": 1.0,
+                "context": context,
+            }
 
         return {
             "reply": reply,
-            "intent": "smalltalk",
+            "intent": "coffee_chat",
             "confidence": float(smalltalk_result["score"]),
             "context": context,
         }
@@ -210,6 +313,7 @@ class DialogueManager:
             context["user_declined_offer_recently"] = False
             context["bridge_pending"] = False
             context["coffee_probe_pending"] = False
+            context["coffee_chat_turns"] = 0
 
             reply = self.text_repository.get("product_flow.start")
             if not reply:
@@ -230,6 +334,7 @@ class DialogueManager:
             context["bridge_pending"] = False
             context["offer_cooldown"] = 0
             context["coffee_probe_pending"] = False
+            context["coffee_chat_turns"] = 0
 
             smalltalk_result = self.smalltalk_retriever.get_reply(text)
 
@@ -278,6 +383,7 @@ class DialogueManager:
             context["user_declined_offer_recently"] = True
             context["bridge_pending"] = False
             context["offer_cooldown"] = 0
+            context["coffee_chat_turns"] = 0
 
             reply = self.text_repository.get("product_flow.exit_to_free_chat")
             if not reply:
@@ -468,6 +574,7 @@ class DialogueManager:
                 context["bridge_pending"] = False
                 context["user_declined_offer_recently"] = False
                 context["offer_cooldown"] = 0
+                context["coffee_chat_turns"] = 0
 
                 return self.text_repository.get("product_flow.choice_done") or (
                     self.response_builder.build_intent_response(intent)
@@ -483,13 +590,12 @@ class DialogueManager:
             )
 
     def _should_trigger_bridge(
-        self,
-        text: str,
-        context: dict[str, Any],
+            self,
+            text: str,
+            context: dict[str, Any],
     ) -> bool:
         """
-        Решает, нужно ли сейчас дать реплику-мостик,
-        но ещё не делать явный оффер.
+        Решает, нужно ли сейчас дать реплику-мостик внутри coffee_chat.
         """
         if context.get("user_declined_offer_recently"):
             return False
@@ -503,10 +609,13 @@ class DialogueManager:
         if context.get("bridge_pending"):
             return False
 
-        if context.get("free_chat_turns", 0) < 1:
+        if context.get("mode") != "coffee_chat":
             return False
 
-        return self.smalltalk_retriever.should_offer_product_transition(text)
+        if context.get("coffee_chat_turns", 0) < 2:
+            return False
+
+        return True
 
     def _should_make_offer(
             self,
@@ -524,12 +633,10 @@ class DialogueManager:
         if not context.get("bridge_pending"):
             return False
 
-        # Если пользователь уже позитивно подхватил тему кофе,
-        # оффер можно делать без дополнительного ожидания
-        if context.get("coffee_topic_turns", 0) > 0:
-            return True
+        if context.get("mode") != "coffee_chat":
+            return False
 
-        if context.get("free_chat_turns", 0) < 2:
+        if context.get("coffee_chat_turns", 0) < 3:
             return False
 
         return True
@@ -702,6 +809,7 @@ class DialogueManager:
         context.setdefault("coffee_cooldown", 0)
         context.setdefault("coffee_topic_turns", 0)
         context.setdefault("last_coffee_probe_turn", 0)
+        context.setdefault("coffee_chat_turns", 0)
 
     @staticmethod
     def _detect_coffee_interest_reply(text: str) -> str | None:

@@ -11,7 +11,12 @@ from config import (
     ROUTES_PATH,
     SMALLTALK_DATASET_PATH,
     VECTORIZER_PATH,
+    WHISPER_MODEL_SIZE,
+    WHISPER_DEVICE,
+    WHISPER_COMPUTE_TYPE,
+    TTS_VOICE
 )
+from core import voice_service
 from core.dialogue_manager import DialogueManager
 from core.recommender import Recommender
 from core.response_builder import ResponseBuilder
@@ -20,6 +25,7 @@ from core.smalltalk_retriever import SmalltalkRetriever
 from core.text_repository import TextRepository
 from loaders.data_loader import load_all_data
 from ml.intent_classifier import IntentClassifier
+from core.voice_service import VoiceService
 
 
 def build_dialogue_manager() -> DialogueManager:
@@ -59,10 +65,19 @@ def build_dialogue_manager() -> DialogueManager:
 
     return dialogue_manager
 
+def build_voice_service() -> VoiceService:
+    return VoiceService(
+        whisper_model_size=WHISPER_MODEL_SIZE,
+        whisper_device=WHISPER_DEVICE,
+        whisper_compute_type=WHISPER_COMPUTE_TYPE,
+        tts_voice=TTS_VOICE,
+    )
+
 
 def main() -> None:
     dialogue_manager = build_dialogue_manager()
-    application = create_application(BOT_TOKEN, dialogue_manager)
+    vs = build_voice_service()
+    application = create_application(BOT_TOKEN, dialogue_manager, vs)
 
     print("Telegram bot is running...")
     application.run_polling()
