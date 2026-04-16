@@ -12,9 +12,7 @@ Telegram-бот на Python для свободного диалога и под
 
 - [main.py](/C:/Users/Baconm145/PycharmProjects/PythonProject/main.py) — точка входа
 - [config.py](/C:/Users/Baconm145/PycharmProjects/PythonProject/config.py) — основные настройки и пути
-- [token_config.py](/C:/Users/Baconm145/PycharmProjects/PythonProject/token_config.py) — токен Telegram-бота
 - [data](/C:/Users/Baconm145/PycharmProjects/PythonProject/data) — JSON-данные для диалога
-- [ml/artifacts](/C:/Users/Baconm145/PycharmProjects/PythonProject/ml/artifacts) — обученные артефакты модели
 - [scripts](/C:/Users/Baconm145/PycharmProjects/PythonProject/scripts) — скрипты подготовки датасетов
 
 ## Требования
@@ -42,7 +40,17 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-### 3. Указать токен бота
+### 3. Подготовить датасеты и обучить модель
+
+Запусти по порядку:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\expand_intents.py
+.\.venv\Scripts\python.exe scripts\prepare_smalltalk_from_siberian_persona_chat.py
+.\.venv\Scripts\python.exe ml\train_model.py
+```
+
+### 4. Указать токен бота
 
 Создай token_config.py и укажи Telegram token своего бота:
 
@@ -50,7 +58,7 @@ pip install -r requirements.txt
 BOT_TOKEN = "your-telegram-bot-token"
 ```
 
-### 4. Проверить, что артефакты и данные уже есть
+### 5. Проверить, что артефакты и данные уже есть
 
 Для старта приложения должны существовать:
 
@@ -62,7 +70,7 @@ BOT_TOKEN = "your-telegram-bot-token"
 - [ml/artifacts/vectorizer.pkl](/C:/Users/Baconm145/PycharmProjects/PythonProject/ml/artifacts/vectorizer.pkl)
 - [ml/artifacts/label_encoder.pkl](/C:/Users/Baconm145/PycharmProjects/PythonProject/ml/artifacts/label_encoder.pkl)
 
-### 5. Запустить бота
+### 6. Запустить бота
 
 ```powershell
 .\.venv\Scripts\python.exe main.py
