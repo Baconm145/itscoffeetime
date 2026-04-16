@@ -1,4 +1,4 @@
-# PythonProject
+# itscofeetime
 
 Telegram-бот на Python для свободного диалога и подбора кофемашин. Проект использует:
 
