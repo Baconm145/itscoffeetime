@@ -7,8 +7,6 @@ from config import (
     CONFIDENCE_THRESHOLD,
     ENTRY_INTENT_THRESHOLD,
     FOLLOWUP_PREFERENCE_INTENT_THRESHOLD,
-    FREE_CHAT_MIN_TURNS_FOR_PROBE,
-    FREE_CHAT_PROBE_REPEAT_WINDOW,
     OFFER_COOLDOWN_AFTER_DECLINE,
     OFFER_REPLY_INTENT_THRESHOLD,
 )
@@ -64,19 +62,17 @@ class DialogueManager:
             text_repository=self.text_repository,
             confidence_threshold=self.confidence_threshold,
             decline_offer_cooldown=self.offer_cooldown_after_decline,
-            detect_followup_preference_intent_fn=self._detect_followup_preference_intent,
+            followup_preference_intent_threshold=self.followup_preference_intent_threshold,
             detect_offer_reply_fn=self._detect_offer_reply,
         )
         self.free_chat_handler = FreeChatHandler(
             classifier=self.classifier,
             smalltalk_retriever=self.smalltalk_retriever,
             text_repository=self.text_repository,
-            is_explicit_product_entry_fn=self._is_explicit_product_entry,
-            detect_coffee_topic_signal_fn=self._detect_coffee_topic_signal,
-            detect_coffee_probe_reply_fn=self._detect_coffee_probe_reply,
-            should_make_coffee_probe_fn=self._should_make_coffee_probe,
+            confidence_threshold=self.confidence_threshold,
+            entry_intent_threshold=self.entry_intent_threshold,
+            coffee_signal_intent_threshold=self.coffee_signal_intent_threshold,
             ensure_sentence_ending_fn=self._ensure_sentence_ending,
-            tick_cooldowns_fn=self._tick_cooldowns,
             execute_product_action_fn=self.product_flow_handler.execute_product_action,
         )
         self.offer_pending_handler = OfferPendingHandler(
@@ -107,20 +103,6 @@ class DialogueManager:
 
         return self.free_chat_handler.handle(text, context)
 
-    def _is_explicit_product_entry(
-        self,
-        intent: str,
-        confidence: float,
-    ) -> bool:
-        if confidence < max(self.confidence_threshold, self.entry_intent_threshold):
-            return False
-
-        allowed_entry_intents = {
-            "ask_recommendation"
-        }
-
-        return intent in allowed_entry_intents
-
     def _detect_offer_reply(self, text: str) -> str | None:
         prediction = self.classifier.predict(text)
         intent = str(prediction["intent"])
@@ -139,56 +121,6 @@ class DialogueManager:
             return "decline"
 
         return None
-
-    def _detect_followup_preference_intent(self, text: str) -> str | None:
-        prediction = self.classifier.predict(text)
-        intent = str(prediction["intent"])
-        confidence = float(prediction["confidence"])
-
-        if confidence < max(self.confidence_threshold, self.followup_preference_intent_threshold):
-            return None
-
-        if intent in {
-            "ask_automatic_option",
-            "ask_budget_option",
-            "ask_cappuccino_option",
-        }:
-            return intent
-
-        return None
-
-    def _detect_coffee_topic_signal(self, text: str) -> str | None:
-        prediction = self.classifier.predict(text)
-        intent = str(prediction["intent"])
-        confidence = float(prediction["confidence"])
-
-        if confidence < max(self.confidence_threshold, self.coffee_signal_intent_threshold):
-            return None
-
-        if intent == "coffee_negative":
-            return "negative"
-
-        if intent == "coffee_positive":
-            return "positive"
-
-        return None
-
-    def _detect_coffee_probe_reply(self, text: str) -> str | None:
-        prediction = self.classifier.predict(text)
-        intent = str(prediction["intent"])
-        confidence = float(prediction["confidence"])
-
-        if confidence < self.confidence_threshold:
-            return None
-
-        if intent in {"coffee_positive", "generic_positive"}:
-            return "positive"
-
-        if intent in {"coffee_negative", "generic_negative"}:
-            return "negative"
-
-        return None
-
     @staticmethod
     def _init_context(context: dict[str, Any]) -> None:
         context.setdefault("mode", "free_chat")
@@ -204,46 +136,6 @@ class DialogueManager:
         context.setdefault("coffee_probe_pending", False)
         context.setdefault("coffee_cooldown", 0)
         context.setdefault("last_coffee_probe_turn", 0)
-
-    def _should_make_coffee_probe(
-        self,
-        context: dict[str, Any],
-    ) -> bool:
-        if context.get("mode") != "free_chat":
-            return False
-
-        if context.get("offer_pending"):
-            return False
-
-        if context.get("ad_flow_active"):
-            return False
-
-        if context.get("coffee_probe_pending"):
-            return False
-
-        if context.get("coffee_cooldown", 0) > 0:
-            return False
-
-        if context.get("offer_cooldown", 0) > 0:
-            return False
-
-        if context.get("free_chat_turns", 0) < FREE_CHAT_MIN_TURNS_FOR_PROBE:
-            return False
-
-        last_probe_turn = context.get("last_coffee_probe_turn", 0)
-        if (
-            last_probe_turn > 0
-            and context.get("free_chat_turns", 0) - last_probe_turn < FREE_CHAT_PROBE_REPEAT_WINDOW
-        ):
-            return False
-
-        return True
-
-    @staticmethod
-    def _tick_cooldowns(context: dict[str, Any]) -> None:
-        for key in ("coffee_cooldown", "offer_cooldown"):
-            if context.get(key, 0) > 0:
-                context[key] -= 1
 
     @staticmethod
     def _ensure_sentence_ending(text: str) -> str:

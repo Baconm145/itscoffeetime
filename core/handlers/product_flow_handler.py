@@ -12,6 +12,7 @@ from config import (
     DEFAULT_FOLLOWUP_KEY,
     DEFAULT_OBJECTION_AD_TEXT_KEY,
     DEFAULT_TARGET_PRODUCT_FOLLOWUP_KEY,
+    FOLLOWUP_PREFERENCE_INTENT_THRESHOLD,
 )
 
 
@@ -29,8 +30,8 @@ class ProductFlowHandler:
         text_repository: TextRepository,
         confidence_threshold: float,
         decline_offer_cooldown: int,
-        detect_followup_preference_intent_fn,
         detect_offer_reply_fn,
+        followup_preference_intent_threshold: float = FOLLOWUP_PREFERENCE_INTENT_THRESHOLD,
     ) -> None:
         self.classifier = classifier
         self.route_engine = route_engine
@@ -39,7 +40,7 @@ class ProductFlowHandler:
         self.text_repository = text_repository
         self.confidence_threshold = confidence_threshold
         self.decline_offer_cooldown = decline_offer_cooldown
-        self._detect_followup_preference_intent = detect_followup_preference_intent_fn
+        self.followup_preference_intent_threshold = followup_preference_intent_threshold
         self._detect_offer_reply = detect_offer_reply_fn
 
     def handle(
@@ -101,6 +102,23 @@ class ProductFlowHandler:
             "confidence": confidence,
             "context": context,
         }
+
+    def _detect_followup_preference_intent(self, text: str) -> str | None:
+        prediction = self.classifier.predict(text)
+        intent = str(prediction["intent"])
+        confidence = float(prediction["confidence"])
+
+        if confidence < max(self.confidence_threshold, self.followup_preference_intent_threshold):
+            return None
+
+        if intent in {
+            "ask_automatic_option",
+            "ask_budget_option",
+            "ask_cappuccino_option",
+        }:
+            return intent
+
+        return None
 
     def execute_product_action(
         self,
