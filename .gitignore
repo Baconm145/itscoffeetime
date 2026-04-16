@@ -1,1 +1,14 @@
-scripts/prepare_smalltalk_dataset.py
+.idea/
+.venv/
+tmp/
+
+__pycache__/
+*.py[cod]
+
+ml/artifacts/
+
+data/smalltalk_dataset_siberian_persona_chat.json.json
+data/intents_expanded.json
+
+token_config.py
+/data/smalltalk_dataset_siberian_persona_chat.json

@@ -1,11 +1,10 @@
 import json
 import random
-from pathlib import Path
+from config import INTENT_EXPANSION_TARGET_PATTERNS, INTENTS_EXPANDED_PATH, INTENTS_PATH
 
-INPUT_PATH = Path("data/intents.json")
-OUTPUT_PATH = Path("data/intents_expanded.json")
-
-TARGET_PATTERNS = 40
+INPUT_PATH = INTENTS_PATH
+OUTPUT_PATH = INTENTS_EXPANDED_PATH
+TARGET_PATTERNS = INTENT_EXPANSION_TARGET_PATTERNS
 
 # Простые шаблоны для генерации вариаций
 PREFIXES = [
@@ -66,7 +65,7 @@ def expand_intents():
         expanded = generate_variations(patterns)
         intent["patterns"] = expanded
 
-        print(f"{intent['tag']}: {len(patterns)} → {len(expanded)}")
+        print(f"{intent['tag']}: {len(patterns)} -> {len(expanded)}")
 
     with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)

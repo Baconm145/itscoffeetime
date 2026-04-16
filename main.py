@@ -1,22 +1,25 @@
 from bot.telegram_bot import create_application
 from config import (
     BOT_TOKEN,
+    COFFEE_SIGNAL_INTENT_THRESHOLD,
     CONFIDENCE_THRESHOLD,
-    DIALOGUES_PATH,
     DIALOGUE_TEXTS_PATH,
-    INTENTS_PATH,
+    ENTRY_INTENT_THRESHOLD,
+    FOLLOWUP_PREFERENCE_INTENT_THRESHOLD,
     LABEL_ENCODER_PATH,
     MODEL_PATH,
+    OFFER_COOLDOWN_AFTER_DECLINE,
+    OFFER_REPLY_INTENT_THRESHOLD,
     PRODUCTS_PATH,
     ROUTES_PATH,
+    SMALLTALK_MIN_SIMILARITY,
     SMALLTALK_DATASET_PATH,
+    TTS_VOICE,
     VECTORIZER_PATH,
     WHISPER_MODEL_SIZE,
     WHISPER_DEVICE,
     WHISPER_COMPUTE_TYPE,
-    TTS_VOICE
 )
-from core import voice_service
 from core.dialogue_manager import DialogueManager
 from core.recommender import Recommender
 from core.response_builder import ResponseBuilder
@@ -30,10 +33,8 @@ from core.voice_service import VoiceService
 
 def build_dialogue_manager() -> DialogueManager:
     data = load_all_data(
-        intents_path=INTENTS_PATH,
         products_path=PRODUCTS_PATH,
         routes_path=ROUTES_PATH,
-        dialogues_path=DIALOGUES_PATH,
         smalltalk_dataset_path=SMALLTALK_DATASET_PATH,
         dialogue_texts_path=DIALOGUE_TEXTS_PATH,
     )
@@ -47,10 +48,12 @@ def build_dialogue_manager() -> DialogueManager:
     route_engine = RouteEngine(data["routes"])
     recommender = Recommender(data["products"])
     response_builder = ResponseBuilder(
-        intents_data=data["intents"],
         routes_data=data["routes"],
     )
-    smalltalk_retriever = SmalltalkRetriever(data["smalltalk"])
+    smalltalk_retriever = SmalltalkRetriever(
+        data["smalltalk"],
+        min_similarity=SMALLTALK_MIN_SIMILARITY,
+    )
     text_repository = TextRepository(data["dialogue_texts"])
 
     dialogue_manager = DialogueManager(
@@ -61,6 +64,11 @@ def build_dialogue_manager() -> DialogueManager:
         smalltalk_retriever=smalltalk_retriever,
         text_repository=text_repository,
         confidence_threshold=CONFIDENCE_THRESHOLD,
+        offer_cooldown_after_decline=OFFER_COOLDOWN_AFTER_DECLINE,
+        entry_intent_threshold=ENTRY_INTENT_THRESHOLD,
+        offer_reply_intent_threshold=OFFER_REPLY_INTENT_THRESHOLD,
+        followup_preference_intent_threshold=FOLLOWUP_PREFERENCE_INTENT_THRESHOLD,
+        coffee_signal_intent_threshold=COFFEE_SIGNAL_INTENT_THRESHOLD,
     )
 
     return dialogue_manager

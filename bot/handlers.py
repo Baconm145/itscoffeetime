@@ -9,7 +9,13 @@ from core.dialogue_manager import DialogueManager
 
 from uuid import uuid4
 
-from config import ENABLE_VOICE_REPLY, TMP_DIR
+from config import (
+    ENABLE_VOICE_REPLY,
+    TELEGRAM_REPLY_MAX_ATTEMPTS,
+    TELEGRAM_RETRY_AFTER_FALLBACK_SECONDS,
+    TELEGRAM_SEND_RETRY_DELAY_SECONDS,
+    TMP_DIR,
+)
 from core.voice_service import VoiceService
 
 # Простое in-memory хранилище контекста пользователей
@@ -32,7 +38,7 @@ def set_voice_service(service: VoiceService) -> None:
 async def safe_reply_text(
     update: Update,
     text: str,
-    max_attempts: int = 3,
+    max_attempts: int = TELEGRAM_REPLY_MAX_ATTEMPTS,
 ) -> None:
     """
     Безопасная отправка сообщения с повторными попытками при сетевых таймаутах.
@@ -46,7 +52,7 @@ async def safe_reply_text(
             return
 
         except RetryAfter as exc:
-            wait_seconds = int(getattr(exc, "retry_after", 3))
+            wait_seconds = int(getattr(exc, "retry_after", TELEGRAM_RETRY_AFTER_FALLBACK_SECONDS))
             print(f"RetryAfter: waiting {wait_seconds}s before retry.")
             await asyncio.sleep(wait_seconds)
 
@@ -54,13 +60,13 @@ async def safe_reply_text(
             print(f"TimedOut while sending message. Attempt {attempt}/{max_attempts}")
             if attempt == max_attempts:
                 raise
-            await asyncio.sleep(2)
+            await asyncio.sleep(TELEGRAM_SEND_RETRY_DELAY_SECONDS)
 
         except NetworkError as exc:
             print(f"NetworkError while sending message: {exc}. Attempt {attempt}/{max_attempts}")
             if attempt == max_attempts:
                 raise
-            await asyncio.sleep(2)
+            await asyncio.sleep(TELEGRAM_SEND_RETRY_DELAY_SECONDS)
 
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -146,13 +152,11 @@ async def handle_voice_message(update: Update, context: ContextTypes.DEFAULT_TYP
         result = dialogue_manager.process_message(recognized_text, user_context)
         USER_CONTEXTS[user_id] = result["context"]
 
-        # Сначала текстом — это полезно и для отладки, и для UX
         await safe_reply_text(
             update,
             f"Ты сказал: {recognized_text}\n\n{result['reply']}"
         )
 
-        # Потом голосом, если включено
         if ENABLE_VOICE_REPLY:
             mp3_path = await voice_service.synthesize_to_mp3(result["reply"], output_path)
             if mp3_path and mp3_path.exists():

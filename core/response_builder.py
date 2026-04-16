@@ -1,48 +1,17 @@
 import random
 from typing import Any
 
-
-class ResponseBuilderError(Exception):
-    """Базовая ошибка сборщика ответов."""
+from config import DEFAULT_AD_TEXT_KEY
 
 
 class ResponseBuilder:
     """
-    Собирает текстовые ответы бота из:
-    - intents.json
-    - dialogue_routes.json
-    - products.json
+    Собирает текстовые ответы бота из dialogue_routes.json и products.json.
     """
 
-    def __init__(
-        self,
-        intents_data: dict[str, Any],
-        routes_data: dict[str, Any],
-    ) -> None:
-        self.intents_data = intents_data
+    def __init__(self, routes_data: dict[str, Any]) -> None:
         self.routes_data = routes_data
-
-        self.intent_map = {
-            intent["tag"]: intent
-            for intent in self.intents_data.get("intents", [])
-            if isinstance(intent, dict) and "tag" in intent
-        }
-
         self.followup_questions = self.routes_data.get("followup_questions", {})
-
-    def build_intent_response(self, intent: str) -> str:
-        """
-        Возвращает случайный базовый ответ из intents.json по тегу интента.
-        """
-        intent_data = self.intent_map.get(intent)
-        if not intent_data:
-            return "Я не совсем понял запрос. Уточни, пожалуйста, что ты имеешь в виду."
-
-        responses = intent_data.get("responses", [])
-        if not responses:
-            return "Я понял тебя. Можешь уточнить запрос?"
-
-        return random.choice(responses)
 
     def build_followup_question(self, question_key: str) -> str:
         """
@@ -57,7 +26,7 @@ class ResponseBuilder:
     def build_product_recommendation(
         self,
         product: dict[str, Any],
-        ad_text_key: str = "medium",
+        ad_text_key: str = DEFAULT_AD_TEXT_KEY,
     ) -> str:
         """
         Собирает рекомендацию товара на основе ad_texts.
@@ -86,7 +55,8 @@ class ResponseBuilder:
 
         if not main_text:
             main_text = (
-                f"Можно рассмотреть альтернативу: {product.get('name', 'неизвестную модель')}."
+                f"Можно рассмотреть альтернативу: "
+                f"{product.get('name', 'неизвестную модель')}."
             )
 
         return main_text
@@ -151,18 +121,8 @@ class ResponseBuilder:
 
         return "\n".join(lines)
 
-    def build_best_product_explained(self, product: dict[str, Any]) -> str:
-        """
-        Собирает ответ для сценария 'лучший вариант'.
-        """
-        name = product.get("name", "Неизвестная модель")
-        ad_texts = product.get("ad_texts", {})
-        main_text = ad_texts.get("medium", f"{name} можно считать одним из лучших вариантов.")
-
-        prefix = "Если говорить о самом удобном и продвинутом варианте, "
-        return prefix + main_text[0].lower() + main_text[1:] if main_text else prefix + name
-
-    def build_fallback_response(self) -> str:
+    @staticmethod
+    def build_fallback_response() -> str:
         """
         Возвращает универсальный fallback-ответ.
         """

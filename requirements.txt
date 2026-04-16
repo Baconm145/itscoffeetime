@@ -1,0 +1,13 @@
+python-telegram-bot
+scikit-learn
+joblib
+natasha
+pymorphy2
+razdel
+navec
+slovnet
+ipymarkup
+faster-whisper
+edge-tts
+datasets
+tqdm

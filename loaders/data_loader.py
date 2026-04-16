@@ -24,19 +24,12 @@ def _read_json_file(file_path: Path) -> Any:
         raise FileNotFoundDataError(f"Файл не найден: {file_path}")
 
     try:
-        with file_path.open("r", encoding="utf-8") as file:
+        with file_path.open("r", encoding="utf-8-sig") as file:
             return json.load(file)
     except json.JSONDecodeError as exc:
         raise InvalidJsonDataError(
             f"Некорректный JSON в файле: {file_path}"
         ) from exc
-
-
-def _read_text_file(file_path: Path) -> str:
-    if not file_path.exists():
-        raise FileNotFoundDataError(f"Файл не найден: {file_path}")
-
-    return file_path.read_text(encoding="utf-8")
 
 
 def load_intents(file_path: Path) -> dict[str, Any]:
@@ -220,30 +213,20 @@ def load_dialogue_texts(file_path: Path) -> dict[str, Any]:
     return data
 
 
-def load_dialogues(file_path: Path) -> str:
-    return _read_text_file(file_path)
-
-
 def load_all_data(
-    intents_path: Path,
     products_path: Path,
     routes_path: Path,
-    dialogues_path: Path,
     smalltalk_dataset_path: Path,
     dialogue_texts_path: Path,
 ) -> dict[str, Any]:
-    intents_data = load_intents(intents_path)
     products_data = load_products(products_path)
     routes_data = load_routes(routes_path)
-    dialogues_text = load_dialogues(dialogues_path)
     smalltalk_data = load_smalltalk_dataset(smalltalk_dataset_path)
     dialogue_texts_data = load_dialogue_texts(dialogue_texts_path)
 
     return {
-        "intents": intents_data,
         "products": products_data,
         "routes": routes_data,
-        "dialogues": dialogues_text,
         "smalltalk": smalltalk_data,
         "dialogue_texts": dialogue_texts_data,
     }

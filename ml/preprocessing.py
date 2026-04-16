@@ -8,7 +8,7 @@ from natasha import (
     Doc
 )
 
-# Инициализация один раз (ВАЖНО!)
+# Инициализация один раз
 segmenter = Segmenter()
 morph_vocab = MorphVocab()
 emb = NewsEmbedding()

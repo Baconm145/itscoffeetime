@@ -2,25 +2,12 @@ import random
 from typing import Any
 
 
-class TextRepositoryError(Exception):
-    """Базовая ошибка репозитория текстов."""
-
-
 class TextRepository:
-    """
-    Репозиторий системных реплик бота.
-    Берёт тексты из dialogue_texts.json.
-    """
 
     def __init__(self, texts_data: dict[str, Any]) -> None:
         self.texts_data = texts_data
 
     def get(self, path: str, **kwargs: Any) -> str:
-        """
-        Возвращает случайную строку по пути вида:
-        'free_chat.offer_transition'
-        'product_flow.start'
-        """
         value = self._get_by_path(path)
 
         if isinstance(value, list):

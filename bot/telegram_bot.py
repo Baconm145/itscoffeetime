@@ -10,6 +10,14 @@ from bot.handlers import (
     set_voice_service,
     start_command,
 )
+from config import (
+    TELEGRAM_CONNECT_TIMEOUT,
+    TELEGRAM_CONNECTION_POOL_SIZE,
+    TELEGRAM_POOL_TIMEOUT,
+    TELEGRAM_READ_TIMEOUT,
+    TELEGRAM_UPDATES_CONNECTION_POOL_SIZE,
+    TELEGRAM_WRITE_TIMEOUT,
+)
 from core.voice_service import VoiceService
 from core.dialogue_manager import DialogueManager
 
@@ -50,26 +58,24 @@ def create_application(
         Application.builder()
         .token(bot_token)
         # Таймауты для обычных запросов бота
-        .connect_timeout(15.0)
-        .read_timeout(30.0)
-        .write_timeout(30.0)
-        .pool_timeout(30.0)
-        .connection_pool_size(8)
+        .connect_timeout(TELEGRAM_CONNECT_TIMEOUT)
+        .read_timeout(TELEGRAM_READ_TIMEOUT)
+        .write_timeout(TELEGRAM_WRITE_TIMEOUT)
+        .pool_timeout(TELEGRAM_POOL_TIMEOUT)
+        .connection_pool_size(TELEGRAM_CONNECTION_POOL_SIZE)
         # Таймауты для long polling (getUpdates)
-        .get_updates_connect_timeout(15.0)
-        .get_updates_read_timeout(30.0)
-        .get_updates_write_timeout(30.0)
-        .get_updates_pool_timeout(30.0)
-        .get_updates_connection_pool_size(4)
+        .get_updates_connect_timeout(TELEGRAM_CONNECT_TIMEOUT)
+        .get_updates_read_timeout(TELEGRAM_READ_TIMEOUT)
+        .get_updates_write_timeout(TELEGRAM_WRITE_TIMEOUT)
+        .get_updates_pool_timeout(TELEGRAM_POOL_TIMEOUT)
+        .get_updates_connection_pool_size(TELEGRAM_UPDATES_CONNECTION_POOL_SIZE)
         .build()
     )
 
     application.add_handler(CommandHandler("start", start_command))
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(MessageHandler(filters.VOICE, handle_voice_message))
-    application.add_handler(
-        MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text_message)
-    )
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text_message))
 
     application.add_error_handler(error_handler)
 

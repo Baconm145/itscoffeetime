@@ -1,11 +1,18 @@
 from __future__ import annotations
 
-import asyncio
 from pathlib import Path
 from typing import Optional
 
 import edge_tts
 from faster_whisper import WhisperModel
+from config import (
+    TTS_VOICE,
+    WHISPER_COMPUTE_TYPE,
+    WHISPER_DEVICE,
+    WHISPER_LANGUAGE,
+    WHISPER_MODEL_SIZE,
+    WHISPER_USE_VAD,
+)
 
 
 class VoiceService:
@@ -17,10 +24,10 @@ class VoiceService:
 
     def __init__(
         self,
-        whisper_model_size: str = "small",
-        whisper_device: str = "cpu",
-        whisper_compute_type: str = "int8",
-        tts_voice: str = "ru-RU-SvetlanaNeural",
+        whisper_model_size: str = WHISPER_MODEL_SIZE,
+        whisper_device: str = WHISPER_DEVICE,
+        whisper_compute_type: str = WHISPER_COMPUTE_TYPE,
+        tts_voice: str = TTS_VOICE,
     ) -> None:
         self.model = WhisperModel(
             whisper_model_size,
@@ -35,8 +42,8 @@ class VoiceService:
         """
         segments, _info = self.model.transcribe(
             str(audio_path),
-            language="ru",
-            vad_filter=True,
+            language=WHISPER_LANGUAGE,
+            vad_filter=WHISPER_USE_VAD,
         )
 
         parts: list[str] = []
@@ -65,13 +72,3 @@ class VoiceService:
         )
         await communicate.save(str(output_path))
         return Path(output_path)
-
-    def synthesize_to_mp3_sync(
-        self,
-        text: str,
-        output_path: str | Path,
-    ) -> Optional[Path]:
-        """
-        Синхронная обёртка над async TTS.
-        """
-        return asyncio.run(self.synthesize_to_mp3(text, output_path))
